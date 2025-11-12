@@ -29,27 +29,13 @@ ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app
 #=================================================
 ynh_script_progression --message="Upgrading source files..." --weight=1
 
-# Create a temporary directory for download and extraction
-tmpdir="$(mktemp -d)"
-
-# Download the source to temp directory (will be placed as anki.tar.zst)
-ynh_setup_source --dest_dir="$tmpdir"
-
-# Extract the archive
-ynh_script_progression --message="Extracting Anki executable..." --weight=2
-cd "$tmpdir"
-tar --zstd -xf anki.tar.zst
-
-# Find and move only the anki executable to install_dir
-rm -f "$install_dir/anki"
-find . -name "anki" -type f -executable -exec mv {} "$install_dir/anki" \;
-chmod +x "$install_dir/anki"
-
-# Cleanup temp directory
-cd /
-ynh_secure_remove --file="$tmpdir"
-
-chown -R $app:www-data "$install_dir"
+#run source in a 'sub shell'
+(
+	set +o nounset
+	source "${install_dir}/venv/bin/activate"
+	set -o nounset
+	ynh_exec_as $app $install_dir/venv/bin/pip3 install --no-cache-dir --upgrade anki
+)
 
 #=================================================
 # UPDATE A CONFIG FILE

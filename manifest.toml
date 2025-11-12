@@ -39,13 +39,6 @@ ram.runtime = "50M"
     default = "visitors"
 
 [resources]
-    [resources.sources]
-        [resources.sources.main]
-        url = "https://github.com/ankitects/anki/releases/download/25.09/anki-launcher-25.09-linux.tar.zst"
-        sha256 = "97cbddae74e44944360cac89bbdda06af7cf080a4dc1012dd6dc63952bbbb029"
-        extract = false
-        rename = "anki.tar.zst"
-
     [resources.system_user]
 
     [resources.install_dir]
@@ -59,5 +52,5 @@ ram.runtime = "50M"
     main.default = 8080
 
     [resources.apt]
-    packages = ["zstd"]
+    packages = ["python3-venv"]
 

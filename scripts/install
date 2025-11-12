@@ -28,25 +28,28 @@ ynh_app_setting_set --app=$app --key=max_sync_payload_megs --value="$max_sync_pa
 #=================================================
 ynh_script_progression --message="Setting up source files..." --weight=1
 
-# Create a temporary directory for extraction
-tmpdir="$(mktemp -d)"
+#Use venv to install pip requirements - Inspired from https://github.com/YunoHost-Apps/pyinventory_ynh/blob/master/scripts/install
+ynh_script_progression --message="Installing pip requirements..." --weight=70
+# Always recreate everything fresh with current python version
+if [ -d "${install_dir}/venv" ] ; then
+	ynh_secure_remove "${install_dir}/venv"
+fi
 
-# Download the source to temp directory (will be placed as anki.tar.zst in install_dir)
-ynh_setup_source --dest_dir="$tmpdir"
+# Skip pip because of: https://github.com/YunoHost/issues/issues/1960
+python3 -m venv --without-pip "${install_dir}/venv"
+chown -R "$app:" "$install_dir"
 
-# Extract the archive
-ynh_script_progression --message="Extracting Anki executable..." --weight=2
-cd "$tmpdir"
-tar --zstd -xf anki.tar.zst
+#run source in a 'sub shell'
+(
+	set +o nounset
+	source "${install_dir}/venv/bin/activate"
+	set -o nounset
+	ynh_exec_as $app $install_dir/venv/bin/python3 -m ensurepip # requires python-venv package
+	ynh_exec_as $app $install_dir/venv/bin/pip3 install --no-cache-dir --upgrade anki
+)
 
-# Find and move only the anki executable to install_dir
-find . -name "anki" -type f -executable -exec mv {} "$install_dir/anki" \;
-chmod +x "$install_dir/anki"
-
-# Cleanup temp directory
-cd /
-ynh_secure_remove --file="$tmpdir"
-
+ynh_add_config --template="anki-syncserver" --destination="${install_dir}/anki-syncserver"
+chmod +x "${install_dir}/anki-syncserver"
 chown -R $app:www-data "$install_dir"
 
 #=================================================
