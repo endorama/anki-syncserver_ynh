@@ -1,0 +1,40 @@
+#!/bin/bash
+
+source ../settings/scripts/_common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# DECLARE DATA AND CONF FILES TO BACKUP
+#=================================================
+ynh_print_info --message="Declaring files to be backed up..."
+
+#=================================================
+# BACKUP THE APP MAIN DIR
+#=================================================
+
+ynh_backup --src_path="$install_dir"
+
+#=================================================
+# BACKUP THE DATA DIR
+#=================================================
+
+ynh_backup --src_path="$data_dir" --is_big
+
+#=================================================
+# SYSTEM CONFIGURATION
+#=================================================
+
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+
+ynh_backup --src_path="/etc/systemd/system/$app.service"
+
+ynh_backup --src_path="/etc/logrotate.d/$app"
+
+ynh_backup --src_path="/var/log/$app"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_print_info --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)."
+

@@ -1,0 +1,83 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+
+sync_user_1=$(ynh_app_setting_get --app=$app --key=sync_user_1)
+sync_user_2=$(ynh_app_setting_get --app=$app --key=sync_user_2)
+sync_user_3=$(ynh_app_setting_get --app=$app --key=sync_user_3)
+sync_user_4=$(ynh_app_setting_get --app=$app --key=sync_user_4)
+sync_user_5=$(ynh_app_setting_get --app=$app --key=sync_user_5)
+max_sync_payload_megs=$(ynh_app_setting_get --app=$app --key=max_sync_payload_megs)
+
+# Set default if not set
+max_sync_payload_megs=${max_sync_payload_megs:-100}
+
+#=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Stopping a systemd service..." --weight=1
+
+ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/$app.log"
+
+#=================================================
+# DOWNLOAD, CHECK AND UNPACK SOURCE
+#=================================================
+ynh_script_progression --message="Upgrading source files..." --weight=1
+
+# Create a temporary directory for download and extraction
+tmpdir="$(mktemp -d)"
+
+# Download the source to temp directory (will be placed as anki.tar.zst)
+ynh_setup_source --dest_dir="$tmpdir"
+
+# Extract the archive
+ynh_script_progression --message="Extracting Anki executable..." --weight=2
+cd "$tmpdir"
+tar --zstd -xf anki.tar.zst
+
+# Find and move only the anki executable to install_dir
+rm -f "$install_dir/anki"
+find . -name "anki" -type f -executable -exec mv {} "$install_dir/anki" \;
+chmod +x "$install_dir/anki"
+
+# Cleanup temp directory
+cd /
+ynh_secure_remove --file="$tmpdir"
+
+chown -R $app:www-data "$install_dir"
+
+#=================================================
+# UPDATE A CONFIG FILE
+#=================================================
+ynh_script_progression --message="Updating a configuration file..." --weight=1
+
+# Create log directory if it doesn't exist
+mkdir -p /var/log/$app
+chown -R $app:$app /var/log/$app
+
+ynh_add_nginx_config
+
+configure_systemd_service
+
+ynh_use_logrotate --non-append
+
+yunohost service add $app --description="Anki Sync Server" --log="/var/log/$app/$app.log"
+
+#=================================================
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting a systemd service..." --weight=1
+
+ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
+
+ynh_script_progression --message="Upgrade of $app completed" --last
+

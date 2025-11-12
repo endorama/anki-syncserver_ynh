@@ -1,0 +1,70 @@
+#!/bin/bash
+
+source _common.sh
+source /usr/share/yunohost/helpers
+
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..." --weight=1
+
+# Get old values
+old_sync_user_1=$(ynh_app_setting_get --app=$app --key=sync_user_1)
+old_sync_user_2=$(ynh_app_setting_get --app=$app --key=sync_user_2)
+old_sync_user_3=$(ynh_app_setting_get --app=$app --key=sync_user_3)
+old_sync_user_4=$(ynh_app_setting_get --app=$app --key=sync_user_4)
+old_sync_user_5=$(ynh_app_setting_get --app=$app --key=sync_user_5)
+old_max_sync_payload_megs=$(ynh_app_setting_get --app=$app --key=max_sync_payload_megs)
+
+#=================================================
+# SHOW_CONFIG FUNCTION FOR 'SHOW' COMMAND
+#=================================================
+
+show_config() {
+    # here you are supposed to read some config file/database/other then print the values
+    # ynh_return "YNH_CONFIG_${PANEL_ID}_${SECTION_ID}_${OPTION_ID}=value"
+    
+    ynh_return "YNH_CONFIG_main_sync_users_sync_user_1=$old_sync_user_1"
+    ynh_return "YNH_CONFIG_main_sync_users_sync_user_2=$old_sync_user_2"
+    ynh_return "YNH_CONFIG_main_sync_users_sync_user_3=$old_sync_user_3"
+    ynh_return "YNH_CONFIG_main_sync_users_sync_user_4=$old_sync_user_4"
+    ynh_return "YNH_CONFIG_main_sync_users_sync_user_5=$old_sync_user_5"
+    ynh_return "YNH_CONFIG_main_limits_max_sync_payload_megs=$old_max_sync_payload_megs"
+}
+
+#=================================================
+# MODIFY THE CONFIGURATION
+#=================================================
+
+apply_config() {
+    # Get new values from the form
+    sync_user_1=${YNH_CONFIG_main_sync_users_sync_user_1:-}
+    sync_user_2=${YNH_CONFIG_main_sync_users_sync_user_2:-}
+    sync_user_3=${YNH_CONFIG_main_sync_users_sync_user_3:-}
+    sync_user_4=${YNH_CONFIG_main_sync_users_sync_user_4:-}
+    sync_user_5=${YNH_CONFIG_main_sync_users_sync_user_5:-}
+    max_sync_payload_megs=${YNH_CONFIG_main_limits_max_sync_payload_megs:-100}
+    
+    # Save new settings
+    ynh_app_setting_set --app=$app --key=sync_user_1 --value="$sync_user_1"
+    ynh_app_setting_set --app=$app --key=sync_user_2 --value="$sync_user_2"
+    ynh_app_setting_set --app=$app --key=sync_user_3 --value="$sync_user_3"
+    ynh_app_setting_set --app=$app --key=sync_user_4 --value="$sync_user_4"
+    ynh_app_setting_set --app=$app --key=sync_user_5 --value="$sync_user_5"
+    ynh_app_setting_set --app=$app --key=max_sync_payload_megs --value="$max_sync_payload_megs"
+    
+    # Reconfigure systemd service with new environment variables
+    ynh_script_progression --message="Updating systemd configuration..." --weight=1
+    configure_systemd_service
+    
+    # Restart the service
+    ynh_script_progression --message="Restarting $app service..." --weight=1
+    ynh_systemd_action --service_name=$app --action="restart" --log_path="/var/log/$app/$app.log"
+}
+
+#=================================================
+# GENERIC FINALIZATION
+#=================================================
+
+ynh_app_config_run $1
+

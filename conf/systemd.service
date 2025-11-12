@@ -1,0 +1,27 @@
+[Unit]
+Description=Anki Sync Server
+After=network.target
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__INSTALL_DIR__
+Environment="SYNC_BASE=__DATA_DIR__"
+Environment="SYNC_HOST=127.0.0.1"
+Environment="SYNC_PORT=__PORT__"
+__SYNC_USER_1__
+__SYNC_USER_2__
+__SYNC_USER_3__
+__SYNC_USER_4__
+__SYNC_USER_5__
+__MAX_SYNC_PAYLOAD_MEGS__
+ExecStart=__INSTALL_DIR__/anki --syncserver
+StandardOutput=append:/var/log/__APP__/__APP__.log
+StandardError=inherit
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

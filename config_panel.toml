@@ -1,0 +1,48 @@
+version = "1.0"
+
+[main]
+name = "Main configuration"
+
+    [main.sync_users]
+    name = "Sync Users"
+
+        [main.sync_users.sync_user_1]
+        ask = "User 1 credentials (format: username:password)"
+        type = "string"
+        help = "Leave empty to disable this user slot"
+        optional = true
+
+        [main.sync_users.sync_user_2]
+        ask = "User 2 credentials (format: username:password)"
+        type = "string"
+        help = "Leave empty to disable this user slot"
+        optional = true
+
+        [main.sync_users.sync_user_3]
+        ask = "User 3 credentials (format: username:password)"
+        type = "string"
+        help = "Leave empty to disable this user slot"
+        optional = true
+
+        [main.sync_users.sync_user_4]
+        ask = "User 4 credentials (format: username:password)"
+        type = "string"
+        help = "Leave empty to disable this user slot"
+        optional = true
+
+        [main.sync_users.sync_user_5]
+        ask = "User 5 credentials (format: username:password)"
+        type = "string"
+        help = "Leave empty to disable this user slot"
+        optional = true
+
+    [main.limits]
+    name = "Upload Limits"
+
+        [main.limits.max_sync_payload_megs]
+        ask = "Maximum sync payload size (MB)"
+        type = "number"
+        help = "Maximum size in megabytes for sync uploads. Leave empty to use the default (100 MB)."
+        optional = true
+        default = 100
+
