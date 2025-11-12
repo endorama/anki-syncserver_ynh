@@ -8,7 +8,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 # Set default values for optional config panel settings if not provided
-sync_user_1=${sync_user_1:-}
+sync_user_1=${sync_user_1:-"user:changeme"}
 sync_user_2=${sync_user_2:-}
 sync_user_3=${sync_user_3:-}
 sync_user_4=${sync_user_4:-}
