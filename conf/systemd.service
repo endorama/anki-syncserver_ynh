@@ -16,7 +16,7 @@ __SYNC_USER_3__
 __SYNC_USER_4__
 __SYNC_USER_5__
 __MAX_SYNC_PAYLOAD_MEGS__
-ExecStart=__INSTALL_DIR__/anki --syncserver
+ExecStart=__INSTALL_DIR__/anki-syncserver
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=inherit
 Restart=always

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+set -eou pipefail
+
+exec __INSTALL_DIR__/venv/bin/python -m anki.syncserver
+
