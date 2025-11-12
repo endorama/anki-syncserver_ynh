@@ -1,6 +1,6 @@
 packaging_format = 2
 
-id = "anki-sync-server"
+id = "anki-syncserver"
 name = "Anki Sync Server"
 description.en = "Sync server for Anki flashcard application"
 description.fr = "Serveur de synchronisation pour l'application Anki"
