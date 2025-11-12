@@ -38,7 +38,7 @@ ynh_script_progression --message="Upgrading source files..." --weight=1
 )
 
 #=================================================
-# UPDATE A CONFIG FILE
+# UPDATE SYSTEMD SERVICE
 #=================================================
 ynh_script_progression --message="Updating a configuration file..." --weight=1
 

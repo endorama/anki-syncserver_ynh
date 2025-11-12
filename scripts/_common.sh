@@ -8,31 +8,26 @@
 # PERSONAL HELPERS
 #=================================================
 
-# Generate environment variables for sync users
-generate_sync_user_env() {
-    local env_vars=""
-    local user_num=1
-    
-    for i in {1..5}; do
-        local var_name="sync_user_${i}"
-        local value="${!var_name:-}"
-        
-        if [ -n "$value" ]; then
-            env_vars="${env_vars}Environment=\"SYNC_USER${i}=${value}\"\n"
-        else
-            env_vars="${env_vars}#Environment=\"SYNC_USER${i}=\"\n"
-        fi
-    done
-    
-    echo -e "$env_vars"
+gen_sync_user() {
+    local n
+    n="$1"
+    local value
+    value="$2"
+
+    if [ -n "$value" ]; then
+        echo "Environment=\"SYNC_USER${n}=${value}\"" 
+    else
+        echo "#Environment=\"SYNC_USER${n}=\""
+    fi
 }
 
-# Generate MAX_SYNC_PAYLOAD_MEGS environment variable
-generate_max_payload_env() {
-    local max_payload="${max_sync_payload_megs:-}"
-    
-    if [ -n "$max_payload" ] && [ "$max_payload" -gt 0 ]; then
-        echo "Environment=\"MAX_SYNC_PAYLOAD_MEGS=${max_payload}\""
+gen_max_sync_payload() {
+    local value
+    value="$1"
+
+
+    if [ -n "$value" ]; then
+        echo "Environment=\"MAX_SYNC_PAYLOAD_MEGS=${value}\""
     else
         echo "#Environment=\"MAX_SYNC_PAYLOAD_MEGS=\""
     fi
@@ -40,32 +35,22 @@ generate_max_payload_env() {
 
 # Configure systemd service with environment variables
 configure_systemd_service() {
-    local sync_user_env=$(generate_sync_user_env)
-    local max_payload_env=$(generate_max_payload_env)
-    
-    # Replace placeholders in systemd service file
+    sync_user_1=$(ynh_app_setting_get --app=$app --key=sync_user_1)
+    sync_user_2=$(ynh_app_setting_get --app=$app --key=sync_user_2)
+    sync_user_3=$(ynh_app_setting_get --app=$app --key=sync_user_3)
+    sync_user_4=$(ynh_app_setting_get --app=$app --key=sync_user_4)
+    sync_user_5=$(ynh_app_setting_get --app=$app --key=sync_user_5)
+    max_sync_payload_megs=$(ynh_app_setting_get --app=$app --key=max_sync_payload_megs)
+
+    sync_user_1=$(gen_sync_user "1" "$sync_user_1")
+    sync_user_2=$(gen_sync_user "2" "$sync_user_2")
+    sync_user_3=$(gen_sync_user "3" "$sync_user_3")
+    sync_user_4=$(gen_sync_user "4" "$sync_user_4")
+    sync_user_5=$(gen_sync_user "5" "$sync_user_5")
+    max_sync_payload_megs=$(gen_max_sync_payload "$max_sync_payload_megs")
+
     ynh_add_systemd_config
-    
-    # Now replace the user environment variables
-    local i
-    for i in {1..5}; do
-        local var_name="sync_user_${i}"
-        local value="${!var_name:-}"
-        
-        if [ -n "$value" ]; then
-            ynh_replace_string "__SYNC_USER_${i}__" "Environment=\"SYNC_USER${i}=${value}\"" "/etc/systemd/system/$app.service"
-        else
-            ynh_replace_string "__SYNC_USER_${i}__" "#Environment=\"SYNC_USER${i}=\"" "/etc/systemd/system/$app.service"
-        fi
-    done
-    
-    # Replace MAX_SYNC_PAYLOAD_MEGS
-    if [ -n "$max_sync_payload_megs" ] && [ "$max_sync_payload_megs" -gt 0 ]; then
-        ynh_replace_string "__MAX_SYNC_PAYLOAD_MEGS__" "Environment=\"MAX_SYNC_PAYLOAD_MEGS=${max_sync_payload_megs}\"" "/etc/systemd/system/$app.service"
-    else
-        ynh_replace_string "__MAX_SYNC_PAYLOAD_MEGS__" "#Environment=\"MAX_SYNC_PAYLOAD_MEGS=\"" "/etc/systemd/system/$app.service"
-    fi
-    
+
     systemctl daemon-reload
 }
 
