@@ -49,6 +49,10 @@ configure_systemd_service() {
     sync_user_5=$(gen_sync_user "5" "$sync_user_5")
     max_sync_payload_megs=$(gen_max_sync_payload "$max_sync_payload_megs")
 
+    ynh_add_config --template="env" --destination="$install_dir/.env.systemd"
+    chown $app:$app "$install_dir/.env.systemd"
+    chmod 600 "$install_dir/.env.systemd"
+
     ynh_add_systemd_config
 
     systemctl daemon-reload

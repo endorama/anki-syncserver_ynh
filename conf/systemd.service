@@ -11,6 +11,7 @@ Environment="SYNC_BASE=__DATA_DIR__"
 Environment="SYNC_HOST=127.0.0.1"
 Environment="SYNC_PORT=__PORT__"
 __MAX_SYNC_PAYLOAD_MEGS__
+EnvironmentFile=__INSTALL_DIR__/.env.systemd
 ExecStart=__INSTALL_DIR__/anki-syncserver
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=inherit
